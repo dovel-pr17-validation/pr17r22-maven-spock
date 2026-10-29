@@ -1,0 +1,22 @@
+plugins {
+  id('java-platform')
+}
+apply from: script('publishMaven')
+
+(rootProject.subprojects - project).each {
+  evaluationDependsOn(it.path)
+}
+
+dependencies {
+  constraints {
+    def mvnProjects = rootProject.subprojects.findAll { it.plugins.hasPlugin('maven-publish') } // find all published projects
+    mvnProjects -= project // don't self reference
+    mvnProjects.each {
+      api("${it.group}:${it.name}:${it.version}")
+    }
+  }
+}
+
+ext.displayName = 'Spock Framework - Bill of Materials'
+description = 'This bill of materials provides managed spock dependencies.'
+ext.packaging = 'pom'

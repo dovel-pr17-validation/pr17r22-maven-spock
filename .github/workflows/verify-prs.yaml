@@ -1,0 +1,144 @@
+# This file was generated using Kotlin DSL (.github/workflows/verify-prs.main.kts).
+# If you want to modify the workflow, please change the Kotlin file and regenerate this YAML file.
+# Generated with https://github.com/typesafegithub/github-workflows-kt
+
+name: 'Verify PRs'
+on:
+  pull_request: {}
+  merge_group: {}
+  workflow_dispatch: {}
+concurrency:
+  group: '${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}'
+  cancel-in-progress: true
+jobs:
+  check_yaml_consistency:
+    name: 'Check YAML consistency'
+    runs-on: 'ubuntu-latest'
+    steps:
+    - id: 'step-0'
+      name: 'Check out'
+      uses: 'actions/checkout@v7'
+    - id: 'step-1'
+      name: 'Execute script'
+      run: 'rm ''.github/workflows/verify-prs.yaml'' && ''.github/workflows/verify-prs.main.kts'''
+    - id: 'step-2'
+      name: 'Consistency check'
+      run: 'git diff --exit-code ''.github/workflows/verify-prs.yaml'''
+  check_all_workflow_yaml_consistency:
+    name: 'Check all Workflow YAML Consistency'
+    runs-on: 'ubuntu-latest'
+    needs:
+    - 'check_yaml_consistency'
+    steps:
+    - id: 'step-0'
+      name: 'Checkout Repository'
+      uses: 'actions/checkout@v7'
+    - id: 'step-1'
+      name: 'Regenerate all Workflow YAMLs'
+      run: 'find .github/workflows -mindepth 1 -maxdepth 1 -name ''*.main.kts'' -exec {} \;'
+    - id: 'step-2'
+      name: 'Check for Modifications'
+      run: |-
+        git add --intent-to-add .
+        git diff --exit-code
+  build-and-verify:
+    name: 'Build and Verify'
+    runs-on: '${{ matrix.os }}'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      actions: 'read'
+      checks: 'read'
+      pull-requests: 'read'
+    needs:
+    - 'check_yaml_consistency'
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+        - '2.5'
+        - '3.0'
+        - '4.0'
+        - '5.0'
+        - '6.0'
+        java:
+        - '8'
+        - '11'
+        - '17'
+        - '21'
+        - '25'
+        os:
+        - 'ubuntu-latest'
+        exclude:
+        - variant: '2.5'
+          java: '17'
+          os: 'ubuntu-latest'
+        - variant: '2.5'
+          java: '21'
+          os: 'ubuntu-latest'
+        - variant: '2.5'
+          java: '25'
+          os: 'ubuntu-latest'
+        - variant: '5.0'
+          java: '8'
+          os: 'ubuntu-latest'
+        - variant: '6.0'
+          java: '8'
+          os: 'ubuntu-latest'
+        - variant: '6.0'
+          java: '11'
+          os: 'ubuntu-latest'
+        include:
+        - variant: '2.5'
+          java: '8'
+          os: 'windows-latest'
+        - variant: '3.0'
+          java: '8'
+          os: 'windows-latest'
+        - variant: '4.0'
+          java: '8'
+          os: 'windows-latest'
+        - variant: '5.0'
+          java: '11'
+          os: 'windows-latest'
+        - variant: '6.0'
+          java: '17'
+          os: 'windows-latest'
+        - variant: '2.5'
+          java: '8'
+          os: 'macos-latest'
+        - variant: '3.0'
+          java: '8'
+          os: 'macos-latest'
+        - variant: '4.0'
+          java: '8'
+          os: 'macos-latest'
+        - variant: '5.0'
+          java: '11'
+          os: 'macos-latest'
+        - variant: '6.0'
+          java: '17'
+          os: 'macos-latest'
+    steps:
+    - id: 'step-0'
+      name: 'Checkout Repository'
+      uses: 'actions/checkout@v7'
+      with:
+        fetch-depth: '2'
+    - id: 'step-1'
+      name: 'Set up JDKs'
+      uses: './.github/actions/setup-build-env'
+      with:
+        additional-java-version: '${{ matrix.java }}'
+    - id: 'step-2'
+      name: 'Set up TestLens'
+      uses: 'testlens-app/setup-testlens@v1'
+      if: 'github.event_name == ''pull_request'''
+    - id: 'step-3'
+      name: 'Build Spock'
+      run: './gradlew --stacktrace ghActionsBuild "-Dvariant=${{ matrix.variant }}" "-DjavaVersion=${{ matrix.java }}"'
+    - id: 'step-4'
+      name: 'Upload to Codecov.io'
+      uses: 'codecov/codecov-action@v7'
+      with:
+        fail_ci_if_error: 'true'

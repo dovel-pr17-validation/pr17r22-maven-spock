@@ -1,0 +1,80 @@
+apply plugin: "maven-publish"
+apply plugin: "signing"
+
+ext {
+  packaging = null // use the default ("jar")
+}
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      pluginManager.withPlugin("java-library") {
+        from(components.java)
+        artifact(sourcesJar)
+        artifact(javadocJar)
+      }
+      pluginManager.withPlugin("java-platform") {
+        from(components.javaPlatform)
+      }
+      pom {
+        name = provider { project.ext.displayName }
+        description = provider { project.description }
+        url = "https://spockframework.org"
+        licenses {
+          license {
+            name = "The Apache Software License, Version 2.0"
+            url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution = "repo"
+          }
+        }
+        scm {
+          connection = "scm:git:git://github.com/spockframework/spock.git"
+          developerConnection = "scm:git:ssh://git@github.com/spockframework/spock.git"
+          url = "https://github.com/spockframework/spock"
+        }
+        developers {
+          developer {
+            id = "pniederw"
+            name = "Peter Niederwieser"
+            email = "peter@pniederw.com"
+          }
+          developer {
+            id = "ldaley"
+            name = "Luke Daley"
+            email = "ld@ldaley.com"
+          }
+          developer {
+            id = "leonard84"
+            name = "Leonard Brünings"
+            email = "lord_damokles@gmx.net"
+          }
+          developer {
+            id = "Vampire"
+            name = "Björn Kautler"
+            email = "bjoern@kautler.net"
+          }
+          developer {
+            id = "AndreasTu"
+            name = "Andreas Turban"
+            email = "andreas.turban@net-baustelle.de"
+          }
+        }
+      }
+    }
+  }
+}
+
+// ensure all checks pass before publishing
+tasks.withType(AbstractPublishToMaven).configureEach {
+  dependsOn(check)
+}
+
+signing {
+  sign(publishing.publications).each { task ->
+    task.onlyIf { gradle.taskGraph.hasTask(publishToSonatype) }
+  }
+}
+
+ext."signing.keyId" = "72EB75E1"
+ext."signing.password" = System.getenv("SIGNING_PASSWORD")
+ext."signing.secretKeyRingFile" = "$rootDir/config/code-signing-secring.gpg"

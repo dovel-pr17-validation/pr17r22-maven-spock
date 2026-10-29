@@ -1,0 +1,24 @@
+plugins {
+  id 'java-library'
+  id 'idea'
+}
+
+dependencies {
+  compileOnly libs.asciidoctorj
+}
+
+java {
+  toolchain {
+    // IntelliJ currently doesn't support running classes compiled with Java 21 in its preview viewer
+    languageVersion = JavaLanguageVersion.of(17)
+  }
+}
+
+tasks.register('installAsciidocExtension', Copy) {
+  from(tasks.named('jar'))
+  into('../../.asciidoctor/lib')
+}
+
+tasks.named('ideaModule') {
+  it.dependsOn('installAsciidocExtension')
+}

@@ -1,0 +1,25 @@
+plugins {
+  id 'groovy-gradle-plugin'
+  id 'idea'
+}
+
+gradlePlugin {
+  plugins {
+    spockBasePlugin {
+      id = 'org.spockframework.base'
+      implementationClass = 'org.spockframework.gradle.SpockBasePlugin'
+    }
+  }
+}
+
+dependencies {
+  implementation('org.ccil.cowan.tagsoup:tagsoup:1.2.1')
+}
+
+testing {
+  suites {
+    test {
+      useSpock('2.4-groovy-4.0')
+    }
+  }
+}

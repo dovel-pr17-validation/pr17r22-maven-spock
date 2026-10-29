@@ -1,0 +1,17 @@
+plugins {
+  id 'groovy-gradle-plugin'
+  id 'idea'
+}
+
+dependencies {
+  compileOnly(libs.workflows.kotlin.compilerEmbeddable)
+}
+
+gradlePlugin {
+  plugins {
+    preprocessWorkflowsPlugin {
+      id = 'org.spockframework.preprocess-workflows'
+      implementationClass = 'org.spockframework.gradle.PreprocessWorkflowsPlugin'
+    }
+  }
+}

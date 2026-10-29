@@ -1,0 +1,68 @@
+plugins {
+  id 'jvm-test-suite'
+}
+
+ext.displayName = "Spock Framework - Spock TestKit Specs for Core Module"
+
+dependencies {
+  api projects.spockCore
+
+  testRuntimeOnly libs.junit.platform.console
+
+  testImplementation libs.junit.platform.testkit
+  testImplementation libs.junit.jupiter
+}
+
+tasks.withType(Test).configureEach {
+  reports.junitXml.required = true
+  reports.html.required = false
+
+  testLogging.exceptionFormat = "full"
+  testLogging.showExceptions = true
+
+  include("**/*Test.class", "**/*Tests.class")
+}
+
+tasks.register("consoleLauncherTest", JavaExec) {
+  dependsOn(testClasses)
+  def reportsDir = layout.buildDirectory.dir("test-results")
+  outputs.dir(reportsDir)
+  classpath(sourceSets.named("test").map { it.runtimeClasspath })
+  mainClass = "org.junit.platform.console.ConsoleLauncher"
+//  jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
+//  args("--select-class", "spock.testkit.testsources.ExampleTestCase")
+  args("--select-class", "spock.testkit.testsources.UnrollTestCase")
+  args("--details", "tree")
+  args("--details-theme", "ascii")
+  args("--include-classname", ".*TestCase")
+  args("--reports-dir", reportsDir)
+//  systemProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager")
+}
+
+
+if (javaVersion >= 17) {
+  testing {
+    suites {
+      junit6Test(JvmTestSuite) {
+        useJUnitJupiter(libs.versions.junit6)
+        sources {
+          groovy {
+            srcDirs = ['src/test/groovy']
+          }
+        }
+
+        dependencies {
+          implementation projects.spockCore
+
+          implementation platform(libs.junit6.bom)
+          implementation libs.junit.platform.testkit
+          implementation libs.junit.jupiter
+        }
+      }
+    }
+  }
+
+  tasks.named('check') {
+    dependsOn(testing.suites.junit6Test)
+  }
+}

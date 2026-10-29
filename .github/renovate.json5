@@ -1,0 +1,67 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "config:recommended"
+  ],
+  // Run 4x per day (hours 0, 6, 12, 18) and don't touch branches outside of it,
+  // to avoid mass rebases of open PRs that block the GitHub Actions runners
+  schedule: ["* */6 * * *"],
+  updateNotScheduled: false,
+  // Wait 3 days after a release to give scanners time to detect malicious packages,
+  // same as the security:minimumReleaseAge* presets, which exist only for npm, PyPI and crates
+  minimumReleaseAge: "3 days",
+  // Don't manage versions in spock modules
+  // we want to keep low versions for baseline compatibility
+  ignorePaths: ["spock-*/**"],
+  packageRules: [
+    // Keep one pin per Groovy major.minor series (e.g. 4.0.x stays in 4.0, 5.0.x stays in 5.0).
+    // The same applies for mockito as we test with both 4 and 5.
+    {
+      matchPackageNames: ["/^org.codehaus.groovy:/", "/^org.apache.groovy:/"],
+      versionCompatibility: "^(?<compatibility>\\d+\\.\\d+)\\..*$"
+    },
+    {
+      matchPackageNames: ["/^org.junit:/"],
+      matchCurrentValue: "/^5\\./",
+      allowedVersions: "(,6.0)"
+    },
+    {
+      matchPackageNames: ["/^org.junit:/"],
+      matchCurrentValue: "/^6\\./",
+      allowedVersions: "(,7.0)"
+    },
+    {
+      matchPackageNames: ["/^org.mockito:/"],
+      matchCurrentValue: "/^4\\./",
+      allowedVersions: "(,5.0)"
+    },
+    // Byte Buddy also publishes `-jdk5` variants of each release,
+    // which Maven version ordering considers newer than the plain release
+    {
+      matchPackageNames: ["net.bytebuddy:byte-buddy"],
+      allowedVersions: "!/-jdk\\d+$/"
+    },
+    {
+      matchPackageNames: ["/^org.spockframework:spock-/"],
+      versionCompatibility: "^(?<version>.*)-(?<compatibility>groovy-.*)$"
+    },
+    // GitHub Actions are referenced from both the generated workflow YAML
+    // (github-actions manager) and the .main.kts sources (kotlin-script
+    // manager via typesafegithub workflows-kt). The two managers see them as
+    // separate packages, so updates land in two PRs that each fail because
+    // only one half is bumped. Normalize both to a shared group key derived
+    // from the action's `owner/name[/sub]` slug:
+    //   kotlin-script: `owner:name[__sub]___major` -> strip `___major`,
+    //                  replace `__` with `/`, replace `:` with `/`
+    //   github-actions: already `owner/name[/sub]`
+    {
+      matchManagers: ["kotlin-script"],
+      matchDepNames: ["/___major$/"],
+      groupName: "gh-action {{ replace ':' '/' (replace '__' '/' (replace '___major' '' depName)) }}"
+    },
+    {
+      matchManagers: ["github-actions"],
+      groupName: "gh-action {{depName}}"
+    }
+  ]
+}

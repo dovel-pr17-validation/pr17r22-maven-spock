@@ -1,0 +1,225 @@
+== Ways to Contribute
+
+There are many ways to contribute to Spock:
+
+* Spreading the word by talking, tweeting, blogging, presenting, submitting talks, writing tutorials or articles (or a book!), sharing success stories, etc.
+* Helping other users by participating in https://gitter.im/spockframework/spock[gitter] discussions, answering https://stackoverflow.com/questions/tagged/spock[Spock questions] on Stack Overflow, etc.
+* Providing early feedback on https://central.sonatype.com/repository/maven-snapshots/org/spockframework/spock-core/maven-metadata.xml[development snapshots] and new features
+* Improving and extending the https://spockframework.org/spock/docs/[reference documentation] https://github.com/spockframework/spock/tree/master/docs[(source)]
+* Translating blog posts, articles, and the reference documentation to other languages (with permission of the authors)
+* Fixing open issues listed in the https://github.com/spockframework/spock/issues[issue tracker]
+* Proposing, discussing, and implementing new features
+* Donating money to fund further development
+* Surprising us with some other form of contribution!
+
+All forms of contribution are very much appreciated.
+
+== Communication
+
+Good communication makes a big difference.
+We are always eager to listen, reflect, and discuss.
+Don't hesitate to get in touch via the https://github.com/spockframework/spock/issues[issue tracker], https://github.com/spockframework/spock/discussions[discussions], or https://gitter.im/spockframework/spock[gitter].
+Choose whatever medium feels most appropriate.
+
+== Triage Issues image:https://www.codetriage.com/spockframework/spock/badges/users.svg[Open Source Helpers,link=https://www.codetriage.com/spockframework/spock]
+
+You can triage issues which may include reproducing bug reports or asking for vital information, such as version numbers or reproduction instructions.
+If you would like to start triaging issues, one easy way to get started is to https://www.codetriage.com/spockframework/spock[subscribe to Spock on CodeTriage].
+
+== Contributing Code/Docs
+
+To contribute code or documentation, please submit a pull request to the https://github.com/spockframework/spock[GitHub repository].
+
+A good way to familiarize yourself with the codebase and contribution process is to look for and tackle low-hanging fruits in the https://github.com/spockframework/spock/issues[issue tracker].
+Before embarking on a more ambitious contribution, please quickly <<Communication,get in touch>> with us.
+This will help to make sure that the contribution is aligned with Spock's overall direction and goals, and gives us a chance to guide design and implementation where needed.
+
+IMPORTANT: *We appreciate your effort, and want to avoid a situation where a contribution requires extensive rework (by you or by us), sits in the queue for a long time, or cannot be accepted at all!*
+
+=== What Makes a Good Pull Request
+
+When reviewing pull requests, we value the following qualities (in no particular order):
+
+* Carefully crafted, clean, and concise code
+* Small, focused commits that tackle one thing at a time
+* New code blends in well with existing code, respecting established coding standards and practices
+* Tests are updated/added along with the code, communicate intent, and cover important cases (see <<Tests,Tests>> for additional information)
+* Documentation (Javadoc, Groovydoc, reference documentation, release notes) is updated/added along with the code
+* A good commit message that follows the https://chris.beams.io/posts/git-commit/[seven rules]
+
+Don't be intimidated by these words.
+Pull requests that satisfy Spock's overall direction and goals (see above), are crafted carefully, and aren't aiming too high, have a good chance of getting accepted.
+Before doing so, we may ask for some concrete improvements to be made, in which case we hope for your cooperation.
+
+=== Avoiding AI Slop
+
+AI tools are welcome (see our link:AI_POLICY.md[AI policy]), but please review their output carefully before submitting it.
+"AI slop" is text or code that looks polished but adds noise, hides a lack of understanding, or simply doesn't match how Spock is written.
+It is easy to spot, and it slows down review for everyone.
+
+Please trim the following before you open a pull request or issue:
+
+* Typographic tells such as em-dashes (`--`).
+  Use plain punctuation, like the rest of this repository.
+* Generic filler and marketing tone ("This elegant solution leverages...", "In today's fast-paced world...").
+  Be direct and factual.
+* Over-explaining the obvious in comments, commit messages, or descriptions.
+  Comment the why, not the what.
+* Emoji and decorative headings in code, comments, commit messages, or descriptions.
+
+The simplest rule: every line you submit should be one you understand and would have been comfortable writing yourself.
+If a sentence or a piece of code doesn't earn its place, remove it.
+
+=== Guiding Principles
+
+==== Try to avoid breaking stuff
+
+Spock has been around for a long time, and people have built a large suite of tests that rely on Spock.
+People want their tests to fail if they make an error; they don't want to update their tests because their testing framework broke stuff.
+
+Unless there is a compelling reason to break something, don't do it.
+The potential impact also has to be considered, if the change only affects a niche use-case then it is easier to include than something that breaks every use-case.
+
+If a behavior has been around long enough it might become a https://xkcd.com/1172/[feature], even if that was never intended or was even a bug.
+In some cases, we will decide to keep the existing behavior, even if we'd do it differently when starting from a blank slate.
+
+==== Can it be solved with an extension instead?
+
+Don't add specialized code to `spock-core` if it can be achieved by Spock's powerful extension system.
+
+If it is not possible at the moment, can the extension system be improved so that it can cover this use-case instead?
+
+===== Can it be a third-party extension?
+
+Spock has a fair number of built-in extensions, and we want to keep this number limited as each extension will increase the maintenance burden.
+
+You can find a list of third-party extensions in the https://github.com/spockframework/spock/wiki/Third-Party-Extensions[Spock Wiki], and it is easy to get yours added as well.
+
+=== Code Standards
+
+A non-exhaustive list :
+
+* Indent with 2 spaces (should already be set by `.editorconfig`)
+* One-line `if` expression can only be used as a `return` guard, e.g., `if (!ok) return;`.
+  For other cases, put the body next to the line and add braces.
+* Prefer to use `Type mock = Mock()` instead of `def mock = Mock(Type)` unless you are explicitly testing the other syntax.
+* Add a blank line before a block label, excluding the first block in a feature.
++
+[source,groovy]
+----
+def "a feature"() {
+  given:
+  def a = 1
+
+  expect:
+  a == 1
+}
+----
+* Don't put code in the same line as a block label.
+* Use `given` instead of `setup`
+* Don't add `noExceptionThrown()` if other assertions are present.
+* Use explicit parameter types when using non-primitive data variables unless you are explicitly testing the other syntax.
+* If you use unroll patterns, prefer to have a feature name describing the general use case and use the `@Unroll` extension to provide the pattern for the iteration.
++
+[source,groovy]
+----
+@Unroll("adding #a and #b gives #c")
+def "testing addition"() {
+  // ...
+}
+----
++
+This pattern gives a better test report, as the intermediate node will be the non-templated feature name.
+
+
+=== Implementation Language
+
+The implementation language for the https://github.com/spockframework/spock/tree/master/spock-core[spock-core] module is Java.
+Java is also the default language for all other modules (except `spock-specs`), but it's fine to use Groovy when there is a concrete reason.
+As a general guideline, use the same language as the surrounding code.
+
+=== Compatibility
+
+Spock supports JRE 8 and higher.
+Therefore, language features and APIs that are only available in Java 9 or higher cannot be used.
+Exceptions to this rule need to be discussed beforehand.
+The same goes for changes to user-visible behavior.
+
+=== Tests
+
+All tests are written in Spock.
+Tests for `spock-core` are located in the `spock-specs` project; all other projects have co-located tests.
+A functional test is required for each user-visible behavior.
+Functional tests for `spock-core` are located under https://github.com/spockframework/spock/tree/master/spock-specs/src/test/groovy/org/spockframework/smoke[`spock-specs/src/test/groovy/org/spockframework/smoke`].
+
+== Development Tools
+
+=== Command Line Build
+
+Spock is built with https://www.gradle.org[Gradle].
+The only prerequisite for executing the build is an installation of JDK 11 and JDK 17.
+The build itself must be run with JDK 17, but JDK 11 must be available via toolchain.
+You can check if Gradle can locate the necessary JDKs by running `./gradlew javaToolchains`.
+If Gradle can't locate your JDK 11, you can make the location of the JDK 11 available via an environment variable called `JDK11`.
+
+After cloning the https://github.com/spockframework/spock[GitHub repository], cd into the top directory and execute `./gradlew build`.
+The build should succeed without any errors.
+`./gradlew tasks` lists the available tasks.
+Always use the Gradle Wrapper (`gradlew` command) rather than your own Gradle installation.
+
+=== CI Build
+
+Each push to `master` triggers a https://github.com/spockframework/spock/actions/workflows/release.yaml[GitHub Actions build] on Linux, Windows, and macOS across all supported Groovy and Java versions.
+Pull requests are verified by the https://github.com/spockframework/spock/actions/workflows/verify-prs.yaml[Verify PRs] workflow.
+
+=== IDE Setup
+
+Using an IDE is recommended but not mandatory.
+Whether or not you use an IDE, please make sure that `./gradlew build` (even better `./allVariants build`) succeeds before submitting a pull request.
+
+==== IntelliJ IDEA
+
+The latest IntelliJ IDEA (Community Edition) is the *preferred* IDE for developing Spock.
+To generate an IDEA project configuration:
+
+* `./gradlew cleanIdea idea`, followed by
+* `File -&gt; Open` in Intellij, then
+* select the appropriate `spock-2.5.ipr`.
+
+NOTE: You can provide an optional 'variant' flag to the gradle build `-Dvariant=[2.5|3.0|4.0]` that specifies the version of groovy you wish to use.
+For example, if we wish to use groovy 3.0, we would run `./gradlew cleanIdea idea -Dvariant=3.0` and import the generated `spock-3.0.ipr` into Intellij.
+You can also use the helper script `allVariants`, e.g., `./allVariants idea`, which will create or update the project for all three variants.
+
+This should result in a fully functional IDE setup where:
+
+* Git VCS integration is configured
+* Important formatter settings are configured (e.g. two spaces indent)
+* Both Java and Groovy code compiles without problems
+* All tests can be run without problems
+
+From time to time (e.g. when someone has added a new dependency), it may be necessary to re-sync the IDEA project with the Gradle build.
+This is done by re-running the steps above.
+
+Note: Unfortunately there are currently https://github.com/spockframework/spock/issues/70[some issues] with Intellij's Gradle support that prevent integration with the Spock project.
+Please use the method described above rather than importing the top-level `build.gradle` file.
+
+==== Eclipse
+
+Eclipse 3.7+ with the latest https://github.com/groovy/groovy-eclipse/wiki[Groovy plugin] should work reasonably well for developing Spock.
+To import the Gradle build into Eclipse, either run `./gradlew eclipse` and import the generated Eclipse projects via `File-&gt;Import-&gt;General-&gt;Existing Project into Workspace`, or install the https://github.com/spring-projects/eclipse-integration-gradle/[Eclipse Gradle Tooling] and import via `File-&gt;Import-&gt;Gradle-&gt;Gradle Project`.
+Either method should result in an IDE setup where:
+
+* Both Java and Groovy code compiles without problems
+* All tests can be run without problems
+
+From time to time (e.g. when someone has added a new dependency), it may be necessary to resync the Eclipse project with the Gradle build.
+Depending on the method of import (see above), this is done by re-running `./gradlew [cleanEclipse] eclipse` and then refreshing all Eclipse projects (F5), or by selecting `Gradle-&gt;Refresh All` in the Package Explorer's context menu.
+
+If you encounter any problems with the IDE setup, or want to make some improvements to it, please <<Communication,get in touch>> with us.
+
+== The End
+
+Thanks for reading this far.
+We are looking forward to your contributions!
+
+The Spock Framework Team
